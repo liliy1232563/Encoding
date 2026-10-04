@@ -6,17 +6,19 @@ if not hasattr(re, "sre_parse"):
     import re._parser
     re.sre_parse = re._parser
 
-def safe_urlparse(url):
-    try:
-        return urllib.parse._urlparse(url)
-    except Exception:
-        return urllib.parse._urlparse("http://invalid")
+# Save original urlparse
+_original_urlparse = urllib.parse.urlparse
 
-# Save original function
-urllib.parse._urlparse = urllib.parse.urlparse
+def safe_urlparse(url, scheme='', allow_fragments=True):
+    try:
+        return _original_urlparse(url, scheme, allow_fragments)
+    except Exception:
+        return _original_urlparse("http://invalid", scheme, allow_fragments)
+
+# Apply safe urlparse patch
 urllib.parse.urlparse = safe_urlparse
 
-# Now import lk21 AFTER monkey patch
+# Import lk21 after monkey patch
 import lk21
 
 # Apply pyrogram save_file patch
